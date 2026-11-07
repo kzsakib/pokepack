@@ -1,0 +1,289 @@
+/*
+  Defaults ported from Card.svelte's component <style> block. The tilt module
+  overwrites these per card, but without initial values every foil declaration
+  that uses them is invalid at computed-value time.
+*/
+:root {
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+  --card-scale: 1;
+  --card-opacity: 0;
+  --translate-x: 0px;
+  --translate-y: 0px;
+  --rotate-x: 0deg;
+  --rotate-y: 0deg;
+  --background-x: 50%;
+  --background-y: 50%;
+  --pointer-from-center: 0;
+  --pointer-from-top: 0;
+  --pointer-from-left: 0;
+}
+
+/*
+  Pokepack card shell.
+  The 3D/holo layer CSS is ported from simeydotme/pokemon-cards-css (GPL-3.0)
+  in ./reference/*.css and imported by ./holo.css. These rules adapt that
+  markup to Pokepack's flip + focus structure.
+*/
+
+.card {
+  width: 100%;
+  --card-aspect: 5 / 7; /* 2.5 : 3.5 */
+  pointer-events: none;
+  /* base.css keeps will-change on permanently; only opt in while interacting */
+  will-change: auto;
+  animation: deal-in 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--deal-i, 0) * 85ms);
+  /* individual `translate` composes with the popup transform on .card */
+}
+
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    translate: 0 26px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.card__translater,
+.card__rotator {
+  width: 100%;
+  will-change: auto;
+}
+
+.card.is-hovering .card__rotator,
+.card.interactive:hover .card__rotator {
+  will-change: transform;
+  box-shadow:
+    0 0 3px -1px transparent,
+    0 0 2px 1px transparent,
+    0 0 5px 0 transparent,
+    0 26px 46px -18px rgba(0, 0, 0, 0.9),
+    0 10px 20px -12px rgba(0, 0, 0, 0.7),
+    0 0 26px -6px var(--effect-glow, var(--card-glow));
+}
+
+.card.is-focused .card__rotator {
+  box-shadow:
+    0 0 3px -1px white,
+    0 0 3px 1px var(--card-edge),
+    0 0 26px 2px var(--effect-glow, var(--card-glow)),
+    0 40px 90px -10px rgba(0, 0, 0, 0.9),
+    0 0 70px -20px var(--effect-glow, var(--card-glow));
+}
+
+.card__rotator {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+}
+
+.card__rotator:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 5px;
+}
+
+/* the flipping layer: back face at 0deg, front face pre-rotated 180deg */
+.card__flipper {
+  grid-area: 1 / 1;
+  width: 100%;
+  overflow: visible !important;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  -webkit-transition: -webkit-transform 0.72s cubic-bezier(0.22, 0.68, 0.16, 1);
+  transition: transform 0.72s cubic-bezier(0.22, 0.68, 0.16, 1);
+}
+
+.card.is-flipping .card__flipper {
+  will-change: transform;
+}
+
+.card.is-revealed .card__flipper {
+  transform: rotateY(180deg);
+}
+
+.card__face {
+  grid-area: 1 / 1;
+  width: 100%;
+  overflow: hidden !important;
+  border-radius: var(--card-radius);
+  background: #0d0d11;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.card__face--back {
+  transform: rotateY(0deg);
+  background: #10314d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.card__face--front {
+  transform: rotateY(180deg);
+}
+
+.card__face img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto !important;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.card__card-img {
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.card.is-loaded .card__card-img {
+  opacity: 1;
+}
+
+.card__placeholder {
+  grid-area: 1 / 1;
+  position: relative;
+  display: grid !important;
+  place-items: center;
+  background:
+    linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.06) 40%, transparent 60%)
+      0 0 / 220% 100%,
+    #141419;
+  animation: shimmer 1.4s linear infinite;
+  transition: opacity 0.25s ease;
+}
+
+.card__placeholder::after {
+  content: "Pokepack";
+  color: rgba(255, 255, 255, 0.16);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.card.is-loaded .card__placeholder {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card.is-image-error .card__placeholder::after {
+  content: "Image unavailable";
+  letter-spacing: 0.06em;
+  font-size: 0.58rem;
+}
+
+.card__back-img {
+  filter: saturate(0.92) brightness(0.94);
+}
+
+/* keep the shine/glare above the card art inside the front face */
+.card__shine,
+.card__glare {
+  grid-area: 1 / 1;
+  /* keep the blend layers out of compositing until the card is interacted with */
+  visibility: hidden;
+}
+
+.card.is-hovering .card__shine,
+.card.is-hovering .card__glare,
+.card.is-focused .card__shine,
+.card.is-focused .card__glare {
+  visibility: visible;
+}
+
+/*
+  CSS-only safety net: reveals the foil on hover even if a browser misses the
+  pointerenter/move events. The JS springs write inline properties, which win
+  over these values once the tilt engine is running.
+*/
+@media (hover: hover) {
+  .card.interactive:hover .card__shine,
+  .card.interactive:hover .card__glare,
+  .card.interactive:focus-visible .card__shine,
+  .card.interactive:focus-visible .card__glare {
+    visibility: visible;
+  }
+
+  .card.interactive:hover {
+    --card-opacity: 0.85;
+    --card-scale: 1.035;
+    --translate-y: -8px;
+    --rotate-x: 2deg;
+    --rotate-y: -3deg;
+  }
+}
+
+/* Signature foil accents get their own rim light. */
+.card[data-effect='iridescent'] { --effect-glow: #ff9edb; }
+.card[data-effect='pixel']      { --effect-glow: #00e5ff; }
+.card[data-effect='prism']      { --effect-glow: #b388ff; }
+.card[data-effect='frost']      { --effect-glow: #bfeaff; }
+
+.card__shine,
+.card__glare {
+  will-change: auto;
+}
+
+.card.is-hovering .card__shine,
+.card.is-hovering .card__glare,
+.card.is-focused .card__shine,
+.card.is-focused .card__glare {
+  will-change: transform, opacity, background-position;
+}
+
+/* subtle vignette so the pack reads as objects, not flat images */
+.card__face--front::after {
+  content: "";
+  grid-area: 1 / 1;
+  border-radius: var(--card-radius);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 -30px 40px -30px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: fade-in 0.2s ease both;
+  }
+
+  /* no 3D flip: cross-fade the two faces instead */
+  .card__flipper {
+    transition: none;
+    transform: none !important;
+  }
+
+  .card__face {
+    transform: none !important;
+    transition: opacity 0.22s ease;
+  }
+
+  .card__face--front {
+    z-index: 2;
+    opacity: 0;
+  }
+
+  .card__face--back {
+    z-index: 1;
+    opacity: 1;
+  }
+
+  .card.is-revealed .card__face--front {
+    opacity: 1;
+  }
+
+  .card.is-revealed .card__face--back {
+    opacity: 0;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

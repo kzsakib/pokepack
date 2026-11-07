@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-pages/
+artifacts/
+/reference/
+.pages/
+.tmp-pw/
+
+.DS_Store
