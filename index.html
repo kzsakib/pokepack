@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08080b" />
+    <meta
+      name="description"
+      content="Pokepack — deal five random Pokémon TCG Sword & Shield cards, flip them over and see the holo foil up close. An unofficial fan project."
+    />
+    <title>Pokepack — five random Sword & Shield cards</title>
+    <link rel="icon" href="/pokepack/favicon.svg" type="image/svg+xml" />
+    <script type="module" crossorigin src="/pokepack/assets/index-BaefApbT.js"></script>
+    <link rel="stylesheet" crossorigin href="/pokepack/assets/index-CidaWT5Y.css">
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Pokepack home">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
+            <circle cx="16" cy="16" r="13.5" stroke="currentColor" stroke-width="1.5" />
+            <path d="M2.5 16h27" stroke="currentColor" stroke-width="1.5" />
+            <circle cx="16" cy="16" r="4.5" fill="currentColor" stroke="var(--bg, #08080b)" stroke-width="2" />
+          </svg>
+        </span>
+        <span>Pokepack</span>
+      </a>
+      <p class="site-header__note">Unofficial fan project</p>
+    </header>
+
+    <main id="main">
+      <section class="pack" aria-labelledby="pack-title">
+        <div class="pack__head">
+          <div>
+            <p class="eyebrow">Sword &amp; Shield era</p>
+            <h1 id="pack-title">Five cards. One pack.</h1>
+            <p class="pack__lede">
+              Flip them over, then move your pointer across the foil.
+            </p>
+          </div>
+          <button id="another" class="btn" type="button">
+            <span class="btn__icon" aria-hidden="true">↻</span>
+            Open another pack
+          </button>
+        </div>
+
+        <div id="pack" class="pack__grid" role="list" aria-live="polite" aria-busy="true"></div>
+        <p id="status" class="status" role="status">Shuffling the pack…</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Built with
+        <a href="https://tcgdex.dev" target="_blank" rel="noreferrer noopener">TCGdex</a>
+        card data and holo effects ported from
+        <a href="https://github.com/simeydotme/pokemon-cards-css" target="_blank" rel="noreferrer noopener">simeydotme/pokemon-cards-css</a>
+        (GPL-3.0). <a href="./LICENSE" target="_blank" rel="noreferrer noopener">Licence</a>.
+      </p>
+      <p class="site-footer__muted">
+        Foil textures by simeydotme (GPL-3.0), Galaxy Holo by aschefield101 and
+        backgrounds by Vecteezy. Pokémon and card images are trademarks of Nintendo,
+        Creatures Inc. and GAME FREAK. This is an unofficial fan project, not
+        affiliated with or endorsed by them.
+      </p>
+    </footer>
+
+    <div
+      id="lightbox"
+      class="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Card view"
+      hidden
+    >
+      <div class="lightbox__backdrop" data-close></div>
+      <div class="lightbox__caption" id="lightbox-caption" aria-hidden="true"></div>
+      <button class="lightbox__close" type="button" aria-label="Close card view" data-close>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+          <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+  </body>
+</html>
