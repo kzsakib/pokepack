@@ -51,8 +51,8 @@ a:hover {
 }
 
 /*
-  Ambient overworld sprites. The fixed layer sits above the background but
-  below the page content, so the wanderers pass behind cards and text.
+  Ambient overworld sprites. The fixed layer sits above the background and
+  the pack, but below the header, footer and lightbox.
 */
 .wanderers {
   position: fixed;
@@ -197,16 +197,6 @@ main {
 .motion-toggle[aria-pressed="false"] .motion-toggle__dot {
   background: var(--ink-faint);
   box-shadow: none;
-}
-
-.motion-toggle[data-reduced="true"] {
-  border-color: rgba(233, 201, 138, 0.45);
-  color: var(--gold);
-}
-
-.motion-toggle[data-reduced="true"] .motion-toggle__dot {
-  background: var(--gold);
-  box-shadow: 0 0 8px rgba(233, 201, 138, 0.7);
 }
 
 main {
@@ -460,6 +450,13 @@ h1 {
   will-change: transform;
 }
 
+/* Once the FLIP lands, the card is laid out at its real enlarged size.
+   Dropping will-change lets the browser rasterize the artwork at that size
+   instead of upscaling the small grid bitmap. */
+.lightbox .card.is-settled {
+  will-change: auto;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 960px) {
@@ -537,21 +534,6 @@ h1 {
   .motion-toggle {
     padding: 5px 8px;
     font-size: 0.58rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-  }
-
-  .lightbox__backdrop,
-  .lightbox__caption {
-    transition: none;
   }
 }
 

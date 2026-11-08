@@ -32,22 +32,41 @@ const SKIP_SETS = new Set(['swsh4.5sv']);
 // In-memory set list cache (per page load; nothing persisted to storage).
 let setListPromise = null;
 
-// Extra foil treatments that can appear on any card, regardless of rarity.
-// The ids match the [data-effect] rules in styles/holo.css.
-const SPECIAL_EFFECTS = [
-  { id: 'iridescent', label: 'Iridescent foil' },
-  { id: 'pixel', label: 'Pixel holo' },
-  { id: 'prism', label: 'Prism foil' },
-  { id: 'frost', label: 'Frost foil' }
+// Every card gets one of the reference repo's real foil treatments. The
+// rarity string is the effect selector used by styles/reference/*.css; the
+// card's actual TCGdex rarity is kept separately for the caption.
+const FOIL_EFFECTS = [
+  { id: 'holo', rarity: 'rare holo', label: 'Holo foil' },
+  { id: 'reverse', rarity: 'reverse holo', label: 'Reverse holo' },
+  { id: 'cosmos', rarity: 'rare holo cosmos', label: 'Cosmos holo' },
+  { id: 'v', rarity: 'rare holo v', label: 'V foil' },
+  { id: 'vmax', rarity: 'rare holo vmax', label: 'VMAX foil', supertype: 'pokémon' },
+  { id: 'vstar', rarity: 'rare holo vstar', label: 'VSTAR foil', supertype: 'pokémon' },
+  { id: 'ultra', rarity: 'rare ultra', label: 'Full-art foil', supertype: 'pokémon' },
+  { id: 'radiant', rarity: 'radiant rare', label: 'Radiant foil' },
+  { id: 'amazing', rarity: 'amazing rare', label: 'Amazing foil' },
+  { id: 'secret', rarity: 'rare secret', label: 'Gold secret foil' },
+  { id: 'gallery', rarity: 'trainer gallery rare holo', label: 'Gallery foil' },
+  { id: 'rainbow', rarity: 'rare rainbow alt', label: 'Rainbow foil' }
 ];
 
-function assignEffect(card, used) {
-  const available = SPECIAL_EFFECTS.filter((effect) => !used.has(effect.id));
-  if (available.length === 0) return;
-  const effect = available[Math.floor(Math.random() * available.length)];
-  card.effect = effect.id;
-  card.effectLabel = effect.label;
-  used.add(effect.id);
+/** Give every card a different reference effect, supported by its card type. */
+function assignFoilEffects(cards) {
+  const bag = shuffle(FOIL_EFFECTS);
+  const used = new Set();
+  for (const card of cards) {
+    const effect = bag.find(
+      (candidate) =>
+        !used.has(candidate.id) &&
+        (!candidate.supertype || candidate.supertype === card.supertype)
+    );
+    if (!effect) continue;
+    card.effect = effect.id;
+    card.foilRarity = effect.rarity;
+    card.effectLabel = effect.label;
+    used.add(effect.id);
+  }
+  return cards;
 }
 
 const logRarities = (cards) => {
@@ -203,24 +222,9 @@ function mapCard(card) {
     number: (card.localId || '').toLowerCase(),
     isGallery,
     effect: null,
+    foilRarity: null,
     effectLabel: null
   };
-}
-
-/**
- * Give roughly a third of the cards a signature foil, and make sure every
- * pack contains at least one so the variants are discoverable. Purely
- * in-memory randomness — a new deal rolls again.
- */
-function addSpecialEffects(cards) {
-  const used = new Set();
-  for (const card of cards) {
-    if (Math.random() < 0.3) assignEffect(card, used);
-  }
-  if (!cards.some((card) => card.effect)) {
-    assignEffect(cards[Math.floor(Math.random() * cards.length)], used);
-  }
-  return cards;
 }
 
 /**
@@ -264,7 +268,7 @@ export async function dealFive() {
 
   if (cards.length < 5) throw new Error('Could not load a full pack from TCGdex.');
 
-  addSpecialEffects(cards);
+  assignFoilEffects(cards);
   logRarities(cards);
   for (const card of cards) {
     if (card.effect) console.info(`[Pokepack] ${card.name}: ${card.effectLabel}`);

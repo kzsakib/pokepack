@@ -1,14 +1,15 @@
 /**
  * Ambient Pokémon Mystery Dungeon sprites.
  *
- * Three wanderers pick a random species, gait and direction, cross the
- * viewport behind the page content, then respawn. The walk sheets are 8 rows
- * of frames, one row per facing direction (S, SE, E, NE, N, NW, W, SW); see
+ * Three wanderers pick a random species from a shuffled bag, roam in short
+ * steps, pause and look around, then change direction. They fade out after a
+ * few moves and the slot draws a new species. The walk sheets are 8 rows of
+ * frames, one row per facing direction (S, SE, E, NE, N, NW, W, SW); see
  * scripts/fetch-sprites.py.
  *
- * Motion follows prefers-reduced-motion by default, but the header toggle
- * lets anyone opt in (or pause the sprites). The layer is decorative:
- * aria-hidden, pointer-events: none.
+ * Motion is on by default. The header toggle is a manual pause, not a
+ * reduced-motion gate. The layer is decorative: aria-hidden, pointer-events:
+ * none.
  */
 
 const BASE = import.meta.env.BASE_URL;
@@ -30,19 +31,38 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 let booted = false;
 
+function directionFromVector(dx, dy) {
+  let best = 0;
+  let bestDot = -Infinity;
+  DIRS.forEach((dir, index) => {
+    const dot = dir.dx * dx + dir.dy * dy;
+    if (dot > bestDot) {
+      bestDot = dot;
+      best = index;
+    }
+  });
+  return best;
+}
+
+function shuffled(items) {
+  const bag = [...items];
+  for (let i = bag.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  return bag;
+}
+
 export function startSpriteWanderers() {
   if (booted) return;
   booted = true;
 
-  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const button = document.querySelector('#motion-toggle');
   if (button?.dataset.spriteController === 'true') return;
   if (button) button.dataset.spriteController = 'true';
   const forced = new URLSearchParams(window.location.search).get('motion');
 
-  let enabled =
-    forced === 'on' ? true : forced === 'off' ? false : !motion.matches;
-  let manual = forced === 'on' || forced === 'off';
+  let enabled = forced !== 'off';
   let stop = null;
   let starting = false;
   let dataPromise = null;
@@ -59,12 +79,9 @@ export function startSpriteWanderers() {
     );
     button.title = enabled
       ? 'Pause the wandering Pokémon sprites'
-      : motion.matches
-        ? 'Your system prefers reduced motion. Turn the wandering sprites on here.'
-        : 'Turn the wandering Pokémon sprites on';
+      : 'Turn the wandering Pokémon sprites on';
     const label = button.querySelector('[data-label]');
     if (label) label.textContent = enabled ? 'Sprites on' : 'Sprites off';
-    button.dataset.reduced = String(!enabled && motion.matches);
   }
 
   function load() {
@@ -104,7 +121,6 @@ export function startSpriteWanderers() {
 
   if (button) {
     button.addEventListener('click', () => {
-      manual = true;
       enabled = !enabled;
       if (enabled) {
         updateButton();
@@ -115,27 +131,12 @@ export function startSpriteWanderers() {
     });
   }
 
-  motion.addEventListener('change', (event) => {
-    if (manual) return;
-    enabled = !event.matches;
-    if (enabled) {
-      updateButton();
-      enable();
-    } else {
-      disable();
-    }
-  });
-
   updateButton();
-  console.info('[Pokepack] sprite motion', {
-    reducedMotion: motion.matches,
-    enabled,
-    source: forced ? 'query' : 'preference'
-  });
+  console.info('[Pokepack] sprite motion', { enabled, source: forced || 'default' });
   if (enabled) enable();
 
   /**
-   * Build the layer and run three independent crossing slots.
+   * Build the layer and run three independent roaming slots.
    * Returns a stop function that removes the layer and all timers.
    */
   function run(sprites) {
@@ -145,78 +146,88 @@ export function startSpriteWanderers() {
     document.body.append(layer);
 
     let running = true;
-    let spawnCount = 0;
     let bag = [];
+
     const slots = Array.from({ length: SLOTS }, () => ({
       timer: null,
       el: null,
+      meta: null,
       raf: null,
+      timeouts: new Set(),
       active: false
     }));
 
+    function later(slot, fn, delay) {
+      const id = window.setTimeout(() => {
+        slot.timeouts.delete(id);
+        if (running && slot.active) fn();
+      }, delay);
+      slot.timeouts.add(id);
+      return id;
+    }
+
+    /** Draw a species that is not already on screen, using a shuffled bag. */
     function nextSprite() {
-      if (bag.length === 0) {
-        bag = [...sprites];
-        for (let i = bag.length - 1; i > 0; i -= 1) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [bag[i], bag[j]] = [bag[j], bag[i]];
-        }
+      const current = new Set(slots.map((slot) => slot.meta?.name).filter(Boolean));
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        if (bag.length === 0) bag = shuffled(sprites);
+        const index = bag.findIndex((meta) => !current.has(meta.name));
+        if (index !== -1) return bag.splice(index, 1)[0];
+        bag = shuffled(sprites);
       }
-      return bag.pop();
+      return sprites[Math.floor(Math.random() * sprites.length)];
     }
 
     function schedule(slot, delay) {
       if (!running) return;
-      slot.timer = window.setTimeout(() => spawn(slot), delay);
+      slot.timer = window.setTimeout(() => {
+        slot.timer = null;
+        spawn(slot);
+      }, delay);
     }
 
     function spawn(slot) {
       if (!running || slot.active) return;
       const meta = nextSprite();
-      const direction = Math.floor(Math.random() * DIRS.length);
-      const { dx, dy } = DIRS[direction];
-      const runningGait = Math.random() < 0.45;
-      const firstWave = spawnCount < SLOTS;
-      spawnCount += 1;
+      const vw = document.documentElement.clientWidth;
+      const vh = document.documentElement.clientHeight;
 
       // Big enough to read, small enough not to take over the page.
-      const targetHeight = clamp(document.documentElement.clientWidth * 0.11, 92, 140);
+      const targetHeight = clamp(vw * 0.11, 92, 140);
       const scale = clamp(targetHeight / meta.frameHeight, 1.4, 3.4);
       const width = meta.frameWidth * scale;
       const height = meta.frameHeight * scale;
 
-      const vw = document.documentElement.clientWidth;
-      const vh = document.documentElement.clientHeight;
-      const margin = Math.max(width, height) + 60;
-      let x = Math.random() * vw;
-      let y = Math.random() * vh;
-
-      if (firstWave) {
-        // Start fully visible at the edge the sprite is walking away from,
-        // so the feature is obvious immediately instead of after a long walk
-        // in from outside the viewport.
-        if (dx > 0) x = 0;
-        else if (dx < 0) x = Math.max(0, vw - width);
-        if (dy > 0) y = 0;
-        else if (dy < 0) y = Math.max(0, vh - height);
-      } else {
-        if (dx > 0) x = -margin;
-        else if (dx < 0) x = vw + margin;
-        if (dy > 0) y = -margin;
-        else if (dy < 0) y = vh + margin;
+      // Keep the roam zone around the pack. That avoids covering the header
+      // and footer text while still letting the sprites cross the cards.
+      const packRect = document.querySelector('#pack')?.getBoundingClientRect();
+      let zoneLeft = 10;
+      let zoneRight = Math.max(10, vw - width - 10);
+      let zoneTop = 10;
+      let zoneBottom = Math.max(10, vh - height - 10);
+      if (packRect && packRect.height > 80) {
+        zoneLeft = Math.max(zoneLeft, packRect.left + 8);
+        zoneRight = Math.min(zoneRight, packRect.right - width - 8);
+        zoneTop = Math.max(zoneTop, packRect.top + 8);
+        zoneBottom = Math.min(zoneBottom, packRect.bottom - height - 8);
+        if (zoneRight < zoneLeft + width * 0.5 || zoneBottom < zoneTop + height * 0.5) {
+          zoneLeft = 10;
+          zoneRight = Math.max(10, vw - width - 10);
+          zoneTop = 10;
+          zoneBottom = Math.max(10, vh - height - 10);
+        }
       }
 
-      const travel = Math.hypot(vw, vh) + margin * 2;
-      const endX = x + dx * travel;
-      const endY = y + dy * travel;
-      const speed = runningGait ? rand(210, 300) : rand(80, 130);
-      const duration = clamp(Math.hypot(endX - x, endY - y) / speed, 3.5, 24);
+      const x = rand(zoneLeft, Math.max(zoneLeft, zoneRight));
+      const y = rand(zoneTop, Math.max(zoneTop, zoneBottom));
 
       const walker = document.createElement('div');
       walker.className = 'wanderer';
       walker.dataset.species = meta.name;
       walker.style.width = `${width}px`;
       walker.style.height = `${height}px`;
+      walker.style.opacity = '0';
+      walker.style.transition = 'none';
       walker.style.transform = `translate3d(${x}px, ${y}px, 0)`;
 
       const sprite = document.createElement('div');
@@ -229,18 +240,28 @@ export function startSpriteWanderers() {
       walker.append(sprite);
       layer.append(walker);
       slot.el = walker;
+      slot.meta = meta;
       slot.active = true;
 
+      let facing = Math.floor(Math.random() * DIRS.length);
       let column = 0;
       let frameClock = 0;
       let last = performance.now();
+      let posX = x;
+      let posY = y;
+      let segments = 0;
+      let moving = false;
+
+      const runningGait = Math.random() < 0.4;
+      const speed = runningGait ? rand(170, 250) : rand(58, 95);
       const frameRate = runningGait ? 0.72 : 1.35;
       const frameDurations = meta.durations.map(
         (ticks) => Math.max(2, ticks) * TICK_MS * frameRate
       );
+      const maxSegments = 4 + Math.floor(Math.random() * 4);
 
       function drawFrame() {
-        sprite.style.backgroundPosition = `${-column * width}px ${-direction * height}px`;
+        sprite.style.backgroundPosition = `${-column * width}px ${-facing * height}px`;
       }
 
       function tick(now) {
@@ -261,29 +282,106 @@ export function startSpriteWanderers() {
       drawFrame();
       slot.raf = requestAnimationFrame(tick);
 
-      let done = false;
+      // Fade in immediately. Everyone starts fully inside the viewport, so a
+      // visitor never has to wait for a walk-in from outside the screen.
+      requestAnimationFrame(() => {
+        if (!slot.active) return;
+        walker.style.transition = 'opacity 0.45s ease';
+        walker.style.opacity = '0.92';
+      });
+
+      function lookAround() {
+        if (!slot.active) return;
+        const looks = 1 + Math.floor(Math.random() * 3);
+        let count = 0;
+        const turn = () => {
+          if (!slot.active) return;
+          facing = (facing + [-2, -1, 1, 2, 3][Math.floor(Math.random() * 5)] + 8) % 8;
+          drawFrame();
+          count += 1;
+          if (count < looks) later(slot, turn, rand(240, 440));
+        };
+        turn();
+        later(slot, step, rand(850, 2300));
+      }
+
+      function leave() {
+        if (!slot.active) return;
+        walker.style.transition = 'opacity 0.5s ease';
+        walker.style.opacity = '0';
+        later(slot, cleanup, 520);
+      }
+
+      function step() {
+        if (!slot.active || moving) return;
+
+        // Aim for another point inside the viewport. If that would push the
+        // sprite out, pick the opposite direction instead.
+        let dir = Math.floor(Math.random() * DIRS.length);
+        let { dx, dy } = DIRS[dir];
+        if ((posX < zoneLeft + width * 0.25 && dx < 0) || (posX > zoneRight - width * 0.25 && dx > 0)) {
+          dx = -dx;
+        }
+        if ((posY < zoneTop + height * 0.25 && dy < 0) || (posY > zoneBottom - height * 0.25 && dy > 0)) {
+          dy = -dy;
+        }
+
+        const distance = rand(110, Math.min(vw, vh) * 0.32);
+        const tx = clamp(posX + dx * distance, zoneLeft, Math.max(zoneLeft, zoneRight));
+        const ty = clamp(posY + dy * distance, zoneTop, Math.max(zoneTop, zoneBottom));
+        const moveX = tx - posX;
+        const moveY = ty - posY;
+        if (Math.hypot(moveX, moveY) < 45) {
+          // Too close to an edge; try again on the next frame.
+          later(slot, step, 120);
+          return;
+        }
+
+        facing = directionFromVector(moveX, moveY);
+        drawFrame();
+        const duration = clamp(Math.hypot(moveX, moveY) / speed, 0.8, 4.5);
+        moving = true;
+        walker.style.transition = `transform ${duration}s linear`;
+        walker.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+
+        let fallback = null;
+        const done = () => {
+          if (!slot.active) return;
+          moving = false;
+          walker.removeEventListener('transitionend', onEnd);
+          if (fallback) clearTimeout(fallback);
+          posX = tx;
+          posY = ty;
+          segments += 1;
+          if (segments >= maxSegments) {
+            leave();
+          } else if (Math.random() < 0.55) {
+            lookAround();
+          } else {
+            step();
+          }
+        };
+        const onEnd = (event) => {
+          if (event.propertyName === 'transform') done();
+        };
+        walker.addEventListener('transitionend', onEnd);
+        fallback = later(slot, done, duration * 1000 + 220);
+      }
+
+      later(slot, step, rand(240, 600));
+
       function cleanup() {
-        if (done) return;
-        done = true;
+        if (!slot.active) return;
         slot.active = false;
         if (slot.raf !== null) cancelAnimationFrame(slot.raf);
         slot.raf = null;
-        slot.el = null;
+        for (const id of slot.timeouts) clearTimeout(id);
+        slot.timeouts.clear();
         walker.remove();
+        slot.el = null;
+        slot.meta = null;
         schedule(slot, rand(700, 1800));
       }
-
-      walker.addEventListener('transitionend', cleanup, { once: true });
-      window.setTimeout(cleanup, (duration + 2) * 1000);
-
-      requestAnimationFrame(() => {
-        walker.style.transition = `transform ${duration.toFixed(2)}s linear`;
-        requestAnimationFrame(() => {
-          if (slot.active) {
-            walker.style.transform = `translate3d(${endX}px, ${endY}px, 0)`;
-          }
-        });
-      });
     }
 
     slots.forEach((slot, index) => {
@@ -295,6 +393,8 @@ export function startSpriteWanderers() {
       for (const slot of slots) {
         if (slot.timer) clearTimeout(slot.timer);
         if (slot.raf !== null) cancelAnimationFrame(slot.raf);
+        for (const id of slot.timeouts) clearTimeout(id);
+        slot.timeouts.clear();
         if (slot.el) slot.el.remove();
       }
       layer.remove();

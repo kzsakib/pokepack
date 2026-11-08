@@ -219,12 +219,6 @@
   }
 }
 
-/* Signature foil accents get their own rim light. */
-.card[data-effect='iridescent'] { --effect-glow: #ff9edb; }
-.card[data-effect='pixel']      { --effect-glow: #00e5ff; }
-.card[data-effect='prism']      { --effect-glow: #b388ff; }
-.card[data-effect='frost']      { --effect-glow: #bfeaff; }
-
 .card__shine,
 .card__glare {
   will-change: auto;
@@ -246,44 +240,4 @@
     inset 0 -30px 40px -30px rgba(0, 0, 0, 0.5);
   pointer-events: none;
   z-index: 5;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card {
-    animation: fade-in 0.2s ease both;
-  }
-
-  /* no 3D flip: cross-fade the two faces instead */
-  .card__flipper {
-    transition: none;
-    transform: none !important;
-  }
-
-  .card__face {
-    transform: none !important;
-    transition: opacity 0.22s ease;
-  }
-
-  .card__face--front {
-    z-index: 2;
-    opacity: 0;
-  }
-
-  .card__face--back {
-    z-index: 1;
-    opacity: 1;
-  }
-
-  .card.is-revealed .card__face--front {
-    opacity: 1;
-  }
-
-  .card.is-revealed .card__face--back {
-    opacity: 0;
-  }
-
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
 }

@@ -30,29 +30,31 @@ memory and is re-dealt on every page load.
   placeholder shimmer covers the art until the image has loaded.
 - Hovering a flipped card springs it toward the pointer (vanilla spring, RAF) and
   moves the holo shine and glare with it. Face-down cards only get a small lift.
-- Three Pokémon Mystery Dungeon sprites wander the page. Each slot picks a
-  random species, gait and one of eight directions, crosses the viewport, then
-  waits a random moment before returning. Sprites are decorative (`aria-hidden`,
-  `pointer-events: none`) and render above the pack but below the header, footer
-  and focus view, so they cannot disappear behind the cards.
-- A small **Sprites on/off** control in the header follows
-  `prefers-reduced-motion`: reduced-motion users start paused and can opt in with
-  one click. The first three sprites appear at the viewport edge immediately, not
-  after a delayed walk in from outside the screen.
-- Roughly a third of cards (at least one per pack) get one of four randomised
-  signature foils on top of their rarity: **iridescent**, **pixel**, **prism** or
-  **frost**. The treatment is chosen per deal and named in the focus-view caption.
+- Three Pokémon Mystery Dungeon sprites roam near the pack. Each slot picks a
+  random species, walks a short segment, sometimes pauses to look around and
+  change facing, then chooses another direction. They avoid the header and footer
+  text, are decorative (`aria-hidden`, `pointer-events: none`), and render above
+  the cards but below the header, footer and focus view.
+- A small **Sprites on/off** control in the header is a manual pause. Sprites are
+  on by default for every visitor, regardless of the operating system's
+  reduced-motion setting.
+- Every card receives a different foil treatment drawn from the complete ported
+  reference set — holo, cosmos, reverse, V, full-art, VMAX, VSTAR, radiant,
+  amazing, gold secret, gallery or rainbow. The treatment is rolled per deal and
+  named in the focus-view caption, independently of the card's printed rarity.
 - Clicking a flipped card opens a focus view: a FLIP-style measure → transform →
-  animate move to the centre over a dimmed, blurred backdrop, scaled to 80% of the
-  viewport height. Tilt and holo keep working while it is open.
+  animate move to the centre over a dimmed, blurred backdrop, sized to 82% of the
+  viewport height. After the animation the card is laid out at its real enlarged
+  size, so the artwork is rasterised at that size rather than upscaled from the
+  small grid bitmap. Tilt and holo keep working while it is open.
 - Close with the close button, a backdrop click, or `Esc`. Focus is trapped between
   the card and the close button; the rest of the page is `inert` while open; scroll
   is locked. Only one card can be open.
 - "Open another pack" deals a fresh hand.
 - Keyboard accessible: cards are real buttons with visible focus rings and labels;
   Enter/Space work natively.
-- `prefers-reduced-motion` swaps the 3D flip for a short cross-fade and disables
-  pointer tilt; the focus view opens without the scale animation.
+- Animations (deal, flip, tilt, lightbox and sprites) run by default even when the
+  operating system requests reduced motion; this is an animation-led fan project.
 - Touch: tap flips/opens. Pointer tilt ignores touch pointers and the card uses
   `touch-action: pan-y`, so vertical scrolling is never blocked.
 
@@ -71,39 +73,51 @@ friendly retry panel instead of a broken grid.
 
 ### Ambient overworld sprites
 
-Three slots run independently. On load all three appear at the viewport edge and
-start walking immediately; after a sprite leaves the viewport, its slot waits
-0.7–1.8 s, rerolls the species, gait and direction, and sends another one across.
-The twelve species are Bulbasaur,
-Charmander, Squirtle, Pikachu, Jigglypuff, Psyduck, Gengar, Eevee, Snorlax,
-Mudkip, Gardevoir and Lucario.
+Three slots run independently and use a shuffled bag of the twelve species, so a
+page load shows three different Pokémon before any repeats. Each one fades in at
+a random point around the pack, walks a short segment, sometimes pauses for
+0.8–2.3 s to look around and change facing, then picks another direction. Gait
+(walk/run), speed and the number of segments are rolled per sprite. After a few
+moves it fades out and the slot waits 0.7–1.8 s before drawing the next species.
+The twelve species are Bulbasaur, Charmander, Squirtle, Pikachu, Jigglypuff,
+Psyduck, Gengar, Eevee, Snorlax, Mudkip, Gardevoir and Lucario.
 
 SpriteCollab supplies overworld walk cycles rather than separate run cycles, so
-“run” uses the same eight-way walk sheet at a faster frame rate and a faster
-crossing speed. The sheets are self-hosted in `public/sprites` (about 160 KB) and
-the frame metadata lives in `public/sprites/index.json`; there is no runtime
-GitHub request. Regenerate them with:
+“run” uses the same eight-way walk sheet at a faster frame rate. The sheets are
+self-hosted in `public/sprites` (about 124 KB) and the frame metadata lives in
+`public/sprites/index.json`; there is no runtime GitHub request. Regenerate them
+with:
 
 ```bash
 python3 scripts/fetch-sprites.py
 ```
 
-`prefers-reduced-motion: reduce` starts the wanderers paused rather than hiding
-the feature permanently; the header toggle is the explicit opt-in. Turning it off
-removes the layer and all animation timers, so it is also a normal pause control.
+The header **Sprites on/off** button pauses the layer and clears all animation
+timers. Sprites are on by default even when the system preference is reduced
+motion.
 
-### Signature foils
+### Randomized reference foils
 
-These are Pokepack additions, not part of the reference port. They replace only the
-shine/glare layers, so the card art stays readable and the rarity still drives the
-base glow. Each pack rolls independently; nothing is persisted.
+Every deal gives each card a different treatment from the reference styles, so a
+pack shows up to five distinct effects. The selection is purely in memory and
+rerolls with every deal. Some treatments (V full-art, VMAX, VSTAR) need the
+Pokémon foil assets and are only assigned to Pokémon; the rest work on Trainers
+and Energy too.
 
-| `data-effect` | Look |
-| --- | --- |
-| `iridescent` | pearl rainbow conic sweep that rolls with the pointer |
-| `pixel` | hard checkerboard foil under a CRT pixel grid |
-| `prism` | angular crystal shards and a moving spectrum |
-| `frost` | icy etched-glass sheen and fine crystal scratches |
+| Label | `data-rarity` selector | Reference file |
+| --- | --- | --- |
+| Holo foil | `rare holo` | `regular-holo.css` |
+| Reverse holo | `reverse holo` | `reverse-holo.css` |
+| Cosmos holo | `rare holo cosmos` | `cosmos-holo.css` |
+| V foil | `rare holo v` | `v-regular.css` |
+| Full-art foil | `rare ultra` | `v-full-art.css` |
+| VMAX foil | `rare holo vmax` | `v-max.css` |
+| VSTAR foil | `rare holo vstar` | `v-star.css` |
+| Radiant foil | `radiant rare` | `radiant-holo.css` |
+| Amazing foil | `amazing rare` | `amazing-rare.css` |
+| Gold secret foil | `rare secret` | `secret-rare.css` |
+| Gallery foil | `trainer gallery rare holo` | `trainer-gallery-holo.css` |
+| Rainbow foil | `rare rainbow alt` | `rainbow-alt.css` |
 
 ### Deal weighting
 
@@ -112,31 +126,13 @@ weighted 3× so packs usually include textured hits instead of only commons. The
 Shining Fates Shiny Vault (`swsh4.5sv`) is excluded because its shiny-specific foil
 art was not ported (see below).
 
-### Rarity → effect mapping
+### How the foil is chosen
 
-The reference CSS was written for the pokemontcg.io rarity names, so TCGdex values
-are normalised in `src/data.js`:
-
-| TCGdex rarity / marker | `data-rarity` | Effect |
-| --- | --- | --- |
-| Common, Uncommon, Rare (no reverse) | `basic` | subtle glare only |
-| Common/Uncommon/Rare with a reverse print | `<rarity> reverse holo` | reverse holo, foil outside the art window |
-| Holo Rare | `rare holo` | regular rainbow holo |
-| Promo with `variants.holo` | `rare holo cosmos` | cosmos holo (SWSH holo promos) |
-| Holo Rare V, V-UNION | `rare holo v` | V sunpillar + grain |
-| Ultra Rare (V full art) | `rare ultra` | V full-art illusion foil |
-| Holo Rare VMAX | `rare holo vmax` | VMAX rainbow cloud |
-| Holo Rare VSTAR | `rare holo vstar` | VSTAR etched ancient pattern |
-| Radiant Rare | `radiant rare` | radiant etched glitter/bars |
-| Amazing Rare | `amazing rare` | amazing-rare glitter burst |
-| Secret Rare | `rare secret` | gold secret glitter |
-| Trainer/Galarian Gallery normal | `trainer gallery rare holo` | gallery colour bands |
-| Gallery V / VMAX | `rare holo v` / `rare holo vmax` + `data-trainer-gallery="true"` | gallery V / rainbow alt |
-| anything unmapped | `basic` | falls back to the subtle glare |
-
-Reverse holo is a print variant rather than a TCGdex rarity. Eligible cards (those
-whose `variants.reverse` is true) are shown as reverse holo 45% of the time. Cosmos
-holo is assigned to holo promos because TCGdex has no "Holo Rare Cosmos" value.
+`src/data.js` keeps the actual TCGdex rarity for the caption and puts the rolled
+treatment's selector into `data-rarity`. `data-actual-rarity` keeps the printed
+rarity for debugging, and `data-foil` keeps the treatment id. The bag is shuffled
+and each card takes the first compatible unused entry, so a pack never repeats a
+treatment unless the card type forces it.
 
 ## Credits and licence
 
@@ -173,12 +169,14 @@ holo is assigned to holo promos because TCGdex has no "Holo Rare Cosmos" value.
   were dropped.
 - Holo blend layers are `visibility: hidden` while a card is at rest to avoid idle
   compositing, and `will-change` is only applied while hovering/focused.
+- The focus view animates with a FLIP transform, then swaps to the real enlarged
+  layout box and drops `will-change`, so the browser rasterises at the target size.
 - Pointer listeners live on the card button (the only hit-testable element) rather
   than the `pointer-events: none` article, and the foil is initialised from the
   pointer's entry coordinates. This keeps hover working in Safari/Firefox and after
   a click-to-flip without requiring extra pointer movement.
 - The GitHub Pages build uses a `/pokepack/` base; Vite rebases the CSS textures and
-  `import.meta.env.BASE_URL` handles the card back.
+  `import.meta.env.BASE_URL` handles the card back and sprites.
 - No localStorage, sessionStorage, cookies or server state are used.
 
 ## Checks
@@ -189,6 +187,11 @@ holo is assigned to holo promos because TCGdex has no "Holo Rare Cosmos" value.
   opacity to 1 and writes non-zero tilt variables; the 720 ms flip transition and
   the focus view (open, caption, close, focus return) were exercised on the built
   site.
-- Sprite test: three `.wanderer` elements spawned immediately, changed frame and
-  computed position over time, and sat above `main` but below the header/footer.
-  The header toggle removed and recreated all three sprites cleanly.
+- Lightbox test: after the 520 ms FLIP the card is 501 × 702 CSS px on a 1440 × 900
+  viewport, with `transform: none`, `will-change: auto`, and the 600 × 825 source
+  image rendered at ~508 × 693. Closing returns the same card to its original grid
+  slot with no leftover transform.
+- Sprite test: three `.wanderer` elements spawned immediately at different species,
+  stayed inside the pack's vertical band, changed frame and facing over time, and
+  paused for a look-around before changing direction. The header toggle removed
+  and recreated all three sprites cleanly.

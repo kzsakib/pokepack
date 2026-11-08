@@ -36,8 +36,6 @@ function stepScalar(s) {
 
 export function attachTilt(instance) {
   const el = instance.el;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (reduced.matches) return { refresh() {} };
 
   const springs = {
     rotateX: createScalar(0, INTERACT),

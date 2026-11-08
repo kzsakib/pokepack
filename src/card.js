@@ -13,13 +13,19 @@ export function createCard(card, index, total) {
   // custom properties) so the JS tilt springs own the card.
   el.className = 'card interactive';
   el.setAttribute('role', 'listitem');
-  el.dataset.rarity = card.rarity;
+  // data-rarity selects the ported foil treatment; the real rarity stays in
+  // the card data for the accessible label and lightbox caption.
+  el.dataset.rarity = card.foilRarity || card.rarity;
+  el.dataset.actualRarity = card.rarity;
+  el.dataset.foil = card.effect || '';
   el.dataset.supertype = card.supertype;
   el.dataset.subtypes = card.subtypes;
-  el.dataset.trainerGallery = String(card.isGallery);
+  // The effect is rolled independently of the printed rarity. Keep the
+  // gallery-specific CSS variants from layering on top of that effect; the
+  // standalone `trainer gallery rare holo` selector handles the gallery look.
+  el.dataset.trainerGallery = 'false';
   el.dataset.set = card.set;
   el.dataset.number = card.number;
-  if (card.effect) el.dataset.effect = card.effect;
   el.classList.add(...card.types.map((type) => type.toLowerCase()));
   el.style.setProperty('--seedx', Math.random().toFixed(4));
   el.style.setProperty('--seedy', Math.random().toFixed(4));
@@ -117,11 +123,10 @@ export function flipCard(instance) {
   instance.el.classList.add('is-revealed', 'is-flipping');
   describeCard(instance);
 
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.setTimeout(() => {
     instance.state = 'revealed';
     instance.el.classList.remove('is-flipping');
-  }, reduced ? 220 : 740);
+  }, 740);
   return true;
 }
 
