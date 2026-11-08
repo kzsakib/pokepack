@@ -59,7 +59,9 @@ a:hover {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 0;
+  /* Above the pack so the wanderers are never lost behind cards, but below
+     the header/footer and the 900-level lightbox. */
+  z-index: 2;
 }
 
 .wanderer {
@@ -68,6 +70,7 @@ a:hover {
   top: 0;
   isolation: isolate;
   pointer-events: none;
+  opacity: 0.92;
   will-change: transform;
 }
 
@@ -92,8 +95,12 @@ a:hover {
 }
 
 .site-header,
-main,
 .site-footer {
+  position: relative;
+  z-index: 3;
+}
+
+main {
   position: relative;
   z-index: 1;
 }
@@ -138,12 +145,68 @@ main,
   color: var(--gold);
 }
 
+.site-header__tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .site-header__note {
   margin: 0;
   color: var(--ink-faint);
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.motion-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-dim);
+  font: inherit;
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.motion-toggle:hover {
+  border-color: rgba(233, 201, 138, 0.45);
+  color: var(--ink);
+}
+
+.motion-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.motion-toggle__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(233, 201, 138, 0.7);
+}
+
+.motion-toggle[aria-pressed="false"] .motion-toggle__dot {
+  background: var(--ink-faint);
+  box-shadow: none;
+}
+
+.motion-toggle[data-reduced="true"] {
+  border-color: rgba(233, 201, 138, 0.45);
+  color: var(--gold);
+}
+
+.motion-toggle[data-reduced="true"] .motion-toggle__dot {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(233, 201, 138, 0.7);
 }
 
 main {
@@ -466,13 +529,18 @@ h1 {
   .site-header__note {
     display: none;
   }
+
+  .site-header__tools {
+    gap: 8px;
+  }
+
+  .motion-toggle {
+    padding: 5px 8px;
+    font-size: 0.58rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wanderers {
-    display: none;
-  }
-
   *,
   *::before,
   *::after {

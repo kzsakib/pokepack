@@ -30,10 +30,15 @@ memory and is re-dealt on every page load.
   placeholder shimmer covers the art until the image has loaded.
 - Hovering a flipped card springs it toward the pointer (vanilla spring, RAF) and
   moves the holo shine and glare with it. Face-down cards only get a small lift.
-- Three Pokémon Mystery Dungeon sprites wander the page in the background.
-  Each slot picks a random species, gait and one of eight directions, crosses the
-  viewport, then waits a random moment before returning. Sprites are decorative
-  (`aria-hidden`, `pointer-events: none`) and pass behind the cards and text.
+- Three Pokémon Mystery Dungeon sprites wander the page. Each slot picks a
+  random species, gait and one of eight directions, crosses the viewport, then
+  waits a random moment before returning. Sprites are decorative (`aria-hidden`,
+  `pointer-events: none`) and render above the pack but below the header, footer
+  and focus view, so they cannot disappear behind the cards.
+- A small **Sprites on/off** control in the header follows
+  `prefers-reduced-motion`: reduced-motion users start paused and can opt in with
+  one click. The first three sprites appear at the viewport edge immediately, not
+  after a delayed walk in from outside the screen.
 - Roughly a third of cards (at least one per pack) get one of four randomised
   signature foils on top of their rarity: **iridescent**, **pixel**, **prism** or
   **frost**. The treatment is chosen per deal and named in the focus-view caption.
@@ -66,9 +71,10 @@ friendly retry panel instead of a broken grid.
 
 ### Ambient overworld sprites
 
-Three slots run independently. On load they appear in quick succession; after a
-sprite leaves the viewport, its slot waits 0.7–1.8 s, rerolls the species, gait
-and direction, and sends another one across. The twelve species are Bulbasaur,
+Three slots run independently. On load all three appear at the viewport edge and
+start walking immediately; after a sprite leaves the viewport, its slot waits
+0.7–1.8 s, rerolls the species, gait and direction, and sends another one across.
+The twelve species are Bulbasaur,
 Charmander, Squirtle, Pikachu, Jigglypuff, Psyduck, Gengar, Eevee, Snorlax,
 Mudkip, Gardevoir and Lucario.
 
@@ -82,8 +88,9 @@ GitHub request. Regenerate them with:
 python3 scripts/fetch-sprites.py
 ```
 
-`prefers-reduced-motion: reduce` skips the wanderers entirely (and CSS hides the
-layer as a second guard).
+`prefers-reduced-motion: reduce` starts the wanderers paused rather than hiding
+the feature permanently; the header toggle is the explicit opt-in. Turning it off
+removes the layer and all animation timers, so it is also a normal pause control.
 
 ### Signature foils
 
@@ -182,5 +189,6 @@ holo is assigned to holo promos because TCGdex has no "Holo Rare Cosmos" value.
   opacity to 1 and writes non-zero tilt variables; the 720 ms flip transition and
   the focus view (open, caption, close, focus return) were exercised on the built
   site.
-- Sprite test: three `.wanderer` elements spawned, changed frame and computed
-  position over time, and sat on `z-index: 0` behind `main` (`z-index: 1`).
+- Sprite test: three `.wanderer` elements spawned immediately, changed frame and
+  computed position over time, and sat above `main` but below the header/footer.
+  The header toggle removed and recreated all three sprites cleanly.
