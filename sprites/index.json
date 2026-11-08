@@ -1,0 +1,202 @@
+[
+  {
+    "id": "0001-bulbasaur",
+    "name": "Bulbasaur",
+    "file": "0001-bulbasaur.png",
+    "frameWidth": 40,
+    "frameHeight": 40,
+    "columns": 6,
+    "durations": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0001/"
+  },
+  {
+    "id": "0004-charmander",
+    "name": "Charmander",
+    "file": "0004-charmander.png",
+    "frameWidth": 32,
+    "frameHeight": 32,
+    "columns": 4,
+    "durations": [
+      6,
+      8,
+      6,
+      8
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0004/"
+  },
+  {
+    "id": "0007-squirtle",
+    "name": "Squirtle",
+    "file": "0007-squirtle.png",
+    "frameWidth": 32,
+    "frameHeight": 32,
+    "columns": 4,
+    "durations": [
+      12,
+      8,
+      12,
+      8
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0007/"
+  },
+  {
+    "id": "0025-pikachu",
+    "name": "Pikachu",
+    "file": "0025-pikachu.png",
+    "frameWidth": 32,
+    "frameHeight": 40,
+    "columns": 4,
+    "durations": [
+      8,
+      10,
+      8,
+      10
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0025/"
+  },
+  {
+    "id": "0039-jigglypuff",
+    "name": "Jigglypuff",
+    "file": "0039-jigglypuff.png",
+    "frameWidth": 32,
+    "frameHeight": 40,
+    "columns": 5,
+    "durations": [
+      6,
+      4,
+      4,
+      4,
+      6
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0039/"
+  },
+  {
+    "id": "0054-psyduck",
+    "name": "Psyduck",
+    "file": "0054-psyduck.png",
+    "frameWidth": 24,
+    "frameHeight": 40,
+    "columns": 4,
+    "durations": [
+      8,
+      12,
+      8,
+      12
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0054/"
+  },
+  {
+    "id": "0094-gengar",
+    "name": "Gengar",
+    "file": "0094-gengar.png",
+    "frameWidth": 32,
+    "frameHeight": 40,
+    "columns": 4,
+    "durations": [
+      8,
+      10,
+      8,
+      10
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0094/"
+  },
+  {
+    "id": "0133-eevee",
+    "name": "Eevee",
+    "file": "0133-eevee.png",
+    "frameWidth": 40,
+    "frameHeight": 48,
+    "columns": 7,
+    "durations": [
+      4,
+      4,
+      4,
+      4,
+      6,
+      2,
+      2
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0133/"
+  },
+  {
+    "id": "0143-snorlax",
+    "name": "Snorlax",
+    "file": "0143-snorlax.png",
+    "frameWidth": 32,
+    "frameHeight": 48,
+    "columns": 4,
+    "durations": [
+      8,
+      10,
+      8,
+      10
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0143/"
+  },
+  {
+    "id": "0258-mudkip",
+    "name": "Mudkip",
+    "file": "0258-mudkip.png",
+    "frameWidth": 32,
+    "frameHeight": 40,
+    "columns": 6,
+    "durations": [
+      4,
+      6,
+      4,
+      6,
+      6,
+      4
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0258/"
+  },
+  {
+    "id": "0282-gardevoir",
+    "name": "Gardevoir",
+    "file": "0282-gardevoir.png",
+    "frameWidth": 32,
+    "frameHeight": 40,
+    "columns": 4,
+    "durations": [
+      8,
+      12,
+      8,
+      12
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0282/"
+  },
+  {
+    "id": "0448-lucario",
+    "name": "Lucario",
+    "file": "0448-lucario.png",
+    "frameWidth": 32,
+    "frameHeight": 48,
+    "columns": 4,
+    "durations": [
+      6,
+      6,
+      6,
+      6
+    ],
+    "credit": "CHUNSOFT",
+    "source": "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0448/"
+  }
+]
