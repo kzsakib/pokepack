@@ -30,6 +30,10 @@ memory and is re-dealt on every page load.
   placeholder shimmer covers the art until the image has loaded.
 - Hovering a flipped card springs it toward the pointer (vanilla spring, RAF) and
   moves the holo shine and glare with it. Face-down cards only get a small lift.
+- Three Pokémon Mystery Dungeon sprites wander the page in the background.
+  Each slot picks a random species, gait and one of eight directions, crosses the
+  viewport, then waits a random moment before returning. Sprites are decorative
+  (`aria-hidden`, `pointer-events: none`) and pass behind the cards and text.
 - Roughly a third of cards (at least one per pack) get one of four randomised
   signature foils on top of their rarity: **iridescent**, **pixel**, **prism** or
   **frost**. The treatment is chosen per deal and named in the focus-view caption.
@@ -59,6 +63,27 @@ memory and is re-dealt on every page load.
 The set list is looked up at runtime; a verified fallback list of SWSH set ids is
 used only if the sets endpoint is unreachable. If the deal fails, the page shows a
 friendly retry panel instead of a broken grid.
+
+### Ambient overworld sprites
+
+Three slots run independently. On load they appear in quick succession; after a
+sprite leaves the viewport, its slot waits 0.7–1.8 s, rerolls the species, gait
+and direction, and sends another one across. The twelve species are Bulbasaur,
+Charmander, Squirtle, Pikachu, Jigglypuff, Psyduck, Gengar, Eevee, Snorlax,
+Mudkip, Gardevoir and Lucario.
+
+SpriteCollab supplies overworld walk cycles rather than separate run cycles, so
+“run” uses the same eight-way walk sheet at a faster frame rate and a faster
+crossing speed. The sheets are self-hosted in `public/sprites` (about 160 KB) and
+the frame metadata lives in `public/sprites/index.json`; there is no runtime
+GitHub request. Regenerate them with:
+
+```bash
+python3 scripts/fetch-sprites.py
+```
+
+`prefers-reduced-motion: reduce` skips the wanderers entirely (and CSS hides the
+layer as a second guard).
 
 ### Signature foils
 
@@ -114,6 +139,11 @@ holo is assigned to holo promos because TCGdex has no "Holo Rare Cosmos" value.
   `/LICENSE`). The study copy in `./reference` is never shipped.
 - Galaxy Holo texture by **aschefield101**. Background textures by **Vecteezy**.
   Both are credited in the reference project and here.
+- Overworld sprites: [PMDCollab/SpriteCollab](https://github.com/PMDCollab/SpriteCollab),
+  licensed **CC BY-NC 4.0**. The licence text is at `public/sprites/LICENSE.md`
+  and the repository's per-sprite credits are reproduced in
+  `public/sprites/CREDITS.md` (also linked from the footer). The site is a
+  non-commercial fan project.
 - Card data and images: [TCGdex](https://tcgdex.dev).
 - Card back: `https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg`,
   downloaded to `public/img/card-back.jpg` (not hotlinked).
@@ -152,3 +182,5 @@ holo is assigned to holo promos because TCGdex has no "Holo Rare Cosmos" value.
   opacity to 1 and writes non-zero tilt variables; the 720 ms flip transition and
   the focus view (open, caption, close, focus return) were exercised on the built
   site.
+- Sprite test: three `.wanderer` elements spawned, changed frame and computed
+  position over time, and sat on `z-index: 0` behind `main` (`z-index: 1`).

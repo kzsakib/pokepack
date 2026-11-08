@@ -50,6 +50,54 @@ a:hover {
   color: var(--gold);
 }
 
+/*
+  Ambient overworld sprites. The fixed layer sits above the background but
+  below the page content, so the wanderers pass behind cards and text.
+*/
+.wanderers {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wanderer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  isolation: isolate;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.wanderer::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 1px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45), transparent 72%);
+  z-index: 0;
+}
+
+.wanderer__sprite {
+  position: relative;
+  z-index: 1;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.3));
+}
+
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
 /* A single soft light source behind the pack. Cheap, no blend layers. */
 .ambient {
   position: fixed;
@@ -421,6 +469,10 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .wanderers {
+    display: none;
+  }
+
   *,
   *::before,
   *::after {

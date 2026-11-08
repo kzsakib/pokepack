@@ -4,6 +4,7 @@ import { dealFive } from './data.js';
 import { createCard, flipCard } from './card.js';
 import { attachTilt } from './tilt.js';
 import { openLightbox, isLightboxOpen } from './lightbox.js';
+import { startSpriteWanderers } from './sprites.js';
 
 const packEl = document.querySelector('#pack');
 const statusEl = document.querySelector('#status');
@@ -113,3 +114,4 @@ anotherBtn.addEventListener('click', () => deal());
 
 renderSkeletons();
 deal();
+startSpriteWanderers();
