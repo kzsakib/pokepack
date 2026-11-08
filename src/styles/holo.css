@@ -67,3 +67,19 @@
 .card {
   --clip-trainer-invert: inset(14.5% 8.5% 48.2% 8.5%);
 }
+
+/*
+  Direction randomization. The reference gradients use a few fixed angles;
+  these overrides let each card roll its own foil direction through
+  --foil-angle (written in card.js). Effects that already read --angle get the
+  same value so all of a card's layers point the same way.
+*/
+.card[data-rarity='rare holo v'] .card__shine,
+.card[data-rarity='rare ultra'] .card__shine,
+.card[data-rarity='rare holo vmax'] .card__shine,
+.card[data-rarity='rare holo vstar'] .card__shine,
+.card[data-rarity='amazing rare'] .card__shine,
+.card[data-rarity='trainer gallery rare holo'] .card__shine,
+.card[data-rarity='rare rainbow alt'] .card__shine {
+  --angle: var(--foil-angle, 133deg);
+}

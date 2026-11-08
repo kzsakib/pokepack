@@ -29,7 +29,7 @@
       #fff 80% 
     ), 
     linear-gradient( 
-      -45deg, 
+      var(--foil-angle, -45deg),
       #000 15%, 
       #fff, 
       #000 85% 

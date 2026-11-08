@@ -40,8 +40,14 @@ memory and is re-dealt on every page load.
   reduced-motion setting.
 - Every card receives a different foil treatment drawn from the complete ported
   reference set — holo, cosmos, reverse, V, full-art, VMAX, VSTAR, radiant,
-  amazing, gold secret, gallery or rainbow. The treatment is rolled per deal and
-  named in the focus-view caption, independently of the card's printed rarity.
+  amazing, gold secret, gallery or rainbow. The treatment and its foil angle are
+  rolled per deal and named in the focus-view caption, independently of the
+  card's printed rarity.
+- Full-art, Trainer and Energy cards use a full-bleed foil instead of the small
+  Pokémon illustration-window clip. Each type also adds an ambient overlay on
+  hover/focus: fire embers and a warm glow, water caustics, grass veins, electric
+  arcs, psychic spirals, fighting shards, darkness blooms, metal scans, dragon
+  scales, fairy sparkles and a neutral gold shimmer.
 - Clicking a flipped card opens a focus view: a FLIP-style measure → transform →
   animate move to the centre over a dimmed, blurred backdrop, sized to 82% of the
   viewport height. After the animation the card is laid out at its real enlarged
@@ -119,6 +125,17 @@ and Energy too.
 | Gallery foil | `trainer gallery rare holo` | `trainer-gallery-holo.css` |
 | Rainbow foil | `rare rainbow alt` | `rainbow-alt.css` |
 
+Each card also gets a random `--foil-angle`, so the reference's fixed gradient
+directions vary from card to card. Effects that read `--angle` are pointed at
+the same value, and the regular holo, cosmos, reverse and radiant gradients use
+`var(--foil-angle, …)` fallbacks.
+
+Full-art (`rare ultra`, VMAX, VSTAR, secret, rainbow, gallery) plus Trainer and
+Energy cards get `is-full-bleed`, which removes the reference's `clip-path` from
+the shine/glare layers. The type classes added from the card's TCG types drive a
+separate `.card__type-fx` overlay; it is invisible at rest and fades in with the
+holo on hover/focus.
+
 ### Deal weighting
 
 The five slots come from five different sets. Trainer/Galarian Gallery sets are
@@ -191,6 +208,10 @@ treatment unless the card type forces it.
   viewport, with `transform: none`, `will-change: auto`, and the 600 × 825 source
   image rendered at ~508 × 693. Closing returns the same card to its original grid
   slot with no leftover transform.
+- Foil test: live deals showed distinct `data-rarity` effects and random
+  `--foil-angle` values; full-art and Trainer cards had `is-full-bleed` and a
+  computed `clip-path: none`. The fire type overlay reached opacity 0.62 on
+  hover and its `translateZ(2px)` layer was visible above the shine/glare.
 - Sprite test: three `.wanderer` elements spawned immediately at different species,
   stayed inside the pack's vertical band, changed frame and facing over time, and
   paused for a look-around before changing direction. The header toggle removed

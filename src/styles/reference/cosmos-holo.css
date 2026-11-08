@@ -33,7 +33,7 @@
   background-image: 
     url("/img/cosmos-bottom.png"), 
     repeating-linear-gradient(
-      82deg, 
+      var(--foil-angle, 82deg),
       hsl(53, 65%, 60%) calc(var(--space)*1), 
       hsl(93, 56%, 50%) calc(var(--space)*2), 
       hsl(176, 54%, 49%) calc(var(--space)*3), 
@@ -81,7 +81,7 @@
   background-image: 
     url("/img/cosmos-middle-trans.png"), 
     repeating-linear-gradient(
-      82deg, 
+      var(--foil-angle, 82deg),
       hsl(53, 65%, 60%) calc(var(--space)*1), 
       hsl(93, 56%, 50%) calc(var(--space)*2), 
       hsl(176, 54%, 49%) calc(var(--space)*3), 
@@ -121,7 +121,7 @@
   background-image: 
     url("/img/cosmos-top-trans.png"), 
     repeating-linear-gradient(
-      82deg, 
+      var(--foil-angle, 82deg),
       hsl(53, 65%, 60%) calc(var(--space)*1), 
       hsl(93, 56%, 50%) calc(var(--space)*2), 
       hsl(176, 54%, 49%) calc(var(--space)*3), 

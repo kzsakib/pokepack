@@ -39,7 +39,7 @@
   clip-path: var(--clip);
 
   background-image: 
-    repeating-linear-gradient( 110deg, 
+    repeating-linear-gradient( var(--foil-angle, 110deg),
       var(--violet), var(--blue), var(--green), var(--yellow), var(--red), 
       var(--violet), var(--blue), var(--green), var(--yellow), var(--red),
       var(--violet), var(--blue), var(--green), var(--yellow), var(--red)

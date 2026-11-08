@@ -26,7 +26,20 @@ export function createCard(card, index, total) {
   el.dataset.trainerGallery = 'false';
   el.dataset.set = card.set;
   el.dataset.number = card.number;
-  el.classList.add(...card.types.map((type) => type.toLowerCase()));
+  const typeClasses = card.types.length
+    ? card.types.map((type) => type.toLowerCase())
+    : ['colorless'];
+  el.classList.add(...typeClasses);
+
+  // Full-art, Trainer and Energy cards look wrong when a foil is clipped to
+  // the Pokémon art window. Let those cards use the full card face.
+  const isFullArt =
+    /ultra|secret|vmax|vstar|rainbow|trainer gallery/i.test(card.rarity) || card.isGallery;
+  el.classList.toggle('is-full-bleed', isFullArt || card.supertype !== 'pokémon');
+
+  const foilAngle = Math.floor(Math.random() * 360);
+  el.style.setProperty('--foil-angle', `${foilAngle}deg`);
+  el.style.setProperty('--angle', `${foilAngle}deg`);
   el.style.setProperty('--seedx', Math.random().toFixed(4));
   el.style.setProperty('--seedy', Math.random().toFixed(4));
   el.style.setProperty('--cosmosbg', `${Math.floor(Math.random() * 734)}px ${Math.floor(Math.random() * 1024)}px`);
@@ -100,7 +113,11 @@ export function createCard(card, index, total) {
   glare.className = 'card__glare';
   glare.setAttribute('aria-hidden', 'true');
 
-  frontFace.append(placeholder, frontImg, shine, glare);
+  const typeFx = document.createElement('span');
+  typeFx.className = 'card__type-fx';
+  typeFx.setAttribute('aria-hidden', 'true');
+
+  frontFace.append(placeholder, frontImg, shine, glare, typeFx);
   flipper.append(backFace, frontFace);
   button.append(flipper);
   translater.append(button);

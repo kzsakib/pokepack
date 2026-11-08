@@ -37,7 +37,7 @@
       var(--card-glow) 130% 
     ),
     repeating-linear-gradient( 
-      45deg, 
+      var(--foil-angle, 45deg),
       hsl(0,0%,10%) 0% ,  
       hsl(0,0%,10%) 1% , 
       hsl(0,0%,10%) var(--barwidth),
@@ -61,7 +61,7 @@
       hsl(0,0%,0%) calc( var(--barwidth) * 10 ) 
     ),
     repeating-linear-gradient( 
-      -45deg, 
+      calc(var(--foil-angle, 45deg) + 180deg),
       hsl(0,0%,10%) 0% ,  
       hsl(0,0%,10%) 1% , 
       hsl(0,0%,10%) var(--barwidth),
